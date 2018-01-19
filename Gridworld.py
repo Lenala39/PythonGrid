@@ -6,6 +6,12 @@ import Calculations
 
 
 class Gridworld:
+    '''
+    @Todo: manueller/automatischer Modus: Funktion für Ausführen Eval und Iter
+    @Todo: jeder eigene Methode(n) optimieren
+    @Todo: Policy visualization (Pfeile drucken)
+    @Todo: value function visualization
+    '''
 
     def __init__(self):
         self.actions = ["up", "down", "left", "right"]
@@ -15,6 +21,9 @@ class Gridworld:
         self.grid = ""
         self.policy = []
         self.valueFunction = []
+        self.REWARD = -0.4
+        self.PITFALL = -1
+        self.GOAL = 1
 
     def read(self):
         '''
@@ -97,14 +106,18 @@ class Gridworld:
         Initializes random policy by assigning random value from self.actions to every state (F)
         '''
         # print(self.actions)
-        i, j = 0
+        i = 0
+        j = 0
+
+        self.policy = [[None for x in range(len(self.grid[0]))] for y in range(len(self.grid))]
+
         for i in range(len(self.grid)):
             # print("row", row)
             for j in range(len(self.grid[0])):
                 # print("elem", elem)
                 if (self.grid[i][j] == "F"):
-                    self.policy[i][j] == random.choice(self.actions)
-        print(self.policy)
+                    self.policy[i][j] = random.choice(self.actions)
+        print("policy: ", self.policy)
 
     def valueFunctionInit(self):
         '''
@@ -112,19 +125,19 @@ class Gridworld:
         Empty fields are given a value of 0, pitfalls are given the punishment-value determined by the user
         and a goal state is given the reward-value determined by the user
         '''
-        i, j = 0
+        i = 0
+        j = 0
+
+        self.valueFunction = [[0 for x in range(len(self.grid[0]))] for y in range(len(self.grid))]
+
         for i in range(len(self.grid)):
             # print("row", row)
             for j in range(len(self.grid[0])):
                 # print("elem", elem)
-                if (self.grid[i][j] == "F"):
-                    self.valueFunction[i][j] = 0
-                elif (self.grid[i][j] == "P"):
-                    self.valueFunction[i][j] = self.PITFALL
-                elif (self.grid[i][j] == "E"):
-                    self.valueFunction[i][j] = self.GOAL
+                if (self.grid[i][j] == "O"):
+                    self.valueFunction[i][j] = None
 
-        print(self.valueFunction)
+        print("valueFunction", self.valueFunction)
 
     def policyEvaluation(self):
 
@@ -137,6 +150,8 @@ class Gridworld:
 
         i = 0
         j = 0
+        copiedValueFunction = [[None for x in range(len(self.grid[0]))] for y in range(len(self.grid))]
+
         # iterate over grid
         for i in range(len(self.grid)):
             for j in range(len(self.grid[0])):
@@ -144,11 +159,20 @@ class Gridworld:
                 if (self.grid[i][j] == "F"):
                     # use function to get weighted sum
                     sum = self.possibleStates(self.grid[i][j], self.policy[i][j], i, j)
-                    print("sum", sum)
+                    # print("sum in policy iteration", sum)
 
                     # update value function with reward and gamma
-                    self.valueFunction[i][j] = self.REWARD + self.gamma * sum
-                    print("value function", self.valueFunction)
+                    copiedValueFunction[i][j] = self.REWARD + self.gamma * sum
+
+                elif (self.grid[i][j] == "O"):
+                    copiedValueFunction[i][j] = None
+                elif (self.grid[i][j] == "E"):
+                    copiedValueFunction[i][j] = self.GOAL
+                elif (self.grid[i][j] == "P"):
+                    copiedValueFunction[i][j] = self.PITFALL
+
+        self.valueFunction = copiedValueFunction
+        print("new value function", self.valueFunction)
 
     def possibleStates(self, state, policyValue, i, j):
         '''
@@ -180,19 +204,19 @@ class Gridworld:
         # get the indices of the next state, if ...
         # ... action is performed correctly
         wanted_i, wanted_j = self.nextState(state, policyValue, i, j)
-        print("wanted i", wanted_i, "wanted j", wanted_j)
+        # print("wanted i", wanted_i, "wanted j", wanted_j)
 
         # ... clockwise action is performed
         clockwise_i, clockwise_j = self.nextState(state, clockwise_action, i, j)
         # ... counterclockwise action is performed
         counterclockwise_i, counterclockwise_j = self.nextState(state, counterclockwise_action, i, j)
-
+        sum = 0
         # calculate the sum of the values with the probability to reach it
+        # print("self.valueFunction wanted", self.valueFunction[wanted_i][wanted_j])
         sum = self.valueFunction[wanted_i][wanted_j] * 0.8
-        print(sum)
         sum = sum + self.valueFunction[clockwise_i][clockwise_j] * 0.1
         sum = sum + self.valueFunction[counterclockwise_i][counterclockwise_j] * 0.1
-        print(sum)
+        # print("sum", sum)
 
         # return the weighted sum of possible states and thei respective values
         return sum
@@ -207,48 +231,67 @@ class Gridworld:
         :return: new indices i and j after performing policy
         '''
         if (policyValue == "up" and i != 0):
-            i = i - 1
-        elif (policyValue == "down" and i != len(self.grid[i])):
-            i = i + 1
+            if (self.grid[i - 1][j] != "O"):
+                i = i - 1
+        elif (policyValue == "down" and i != len(self.grid) - 1):
+            if (self.grid[i + 1][j] != "O"):
+                i = i + 1
         elif (policyValue == "left" and j != 0):
-            j = j - 1
-        elif (policyValue == "right" and j != len(self.grid)):
-            j = j + 1
+            if (self.grid[i][j - 1] != "O"):
+                j = j - 1
+        elif (policyValue == "right" and j != len(self.grid[0]) - 1):
+            if (self.grid[i][j + 1] != "O"):
+                j = j + 1
 
         return i, j
 
     def makePolicy(self):
         # go through the whole policy to update it
-        for row in self.policy:
-            for col in row:
-                # array to save the values for all neighbours
-                neighbours = [None, None, None, None]
+        i = 0
+        j = 0
+        for row in range(len(self.policy)):
+            for col in range(len(self.policy[0])):
+                if(self.policy[row][col] != None):
+                    # array to save the values for all neighbours
+                    neighbours = [None, None, None, None]
 
-                # if the index is not out of bounds, save the values of the neighbours
-                try:
-                    neighbours[0] = self.valueFunction[row - 1][col]
-                except(IndexError):
-                    pass
+                    # if the index is not out of bounds, save the values of the neighbours
+                    try:
+                        neighbours[0] = self.valueFunction[row - 1][col]
+                    except(IndexError):
+                        pass
 
-                try:
-                    neighbours[1] = self.valueFunction[row + 1][col]
-                except(IndexError):
-                    pass
+                    try:
+                        neighbours[1] = self.valueFunction[row + 1][col]
+                    except(IndexError):
+                        pass
 
-                try:
-                    neighbours[2] = self.valueFunction[row][col - 1]
-                except(IndexError):
-                    pass
+                    try:
+                        neighbours[2] = self.valueFunction[row][col - 1]
+                    except(IndexError):
+                        pass
 
-                try:
-                    neighbours[3] = self.valueFunction[row][col + 1]
-                except(IndexError):
-                    pass
+                    try:
+                        neighbours[3] = self.valueFunction[row][col + 1]
+                    except(IndexError):
+                        pass
 
-                # get index of the neighbour with the maximal value
-                ai = neighbours.index(max(neighbours))
-                # save the greedy action in the policy
-                self.policy[row][col] = self.actions[ai]
+                    for i in range(len(neighbours)):
+                        if (neighbours[i] != None):
+                            max = neighbours[i]
+
+                    for i in range(len(neighbours)):
+                        if (neighbours[i] != None):
+                            if max < neighbours[i]:
+                                max = neighbours[i]
+
+                    # get index of the neighbour with the maximal value
+                    ai = neighbours.index(max)
+
+                    # save the greedy action in the policy
+                    self.policy[row][col] = self.actions[ai]
+
+        print(self.policy)
 
 
 def printPolicy(self):
@@ -264,9 +307,10 @@ if __name__ == '__main__':
     test = Gridworld()
     test.read()
     test.printGrid()
-    test.readUserInput()
+    # test.readUserInput()
     test.randomPolicyInit()
     test.valueFunctionInit()
-    test.policyEvaluation()
+    for i in range(20):
+        test.policyEvaluation()
+
     test.makePolicy()
-    
