@@ -247,49 +247,51 @@ class Gridworld:
 
     def makePolicy(self):
         # go through the whole policy to update it
-        i = 0
-        j = 0
         for row in range(len(self.policy)):
             for col in range(len(self.policy[0])):
+                # only get policy for fields which aren't a obstacle
                 if(self.policy[row][col] != None):
                     # array to save the values for all neighbours
-                    neighbours = [None, None, None, None]
+                    neighbours = []
 
                     # if the index is not out of bounds, save the values of the neighbours
                     try:
-                        neighbours[0] = self.valueFunction[row - 1][col]
+                        value = self.valueFunction[row - 1][col]
+                        if value != None:
+                            neighbours.append((value, "up"))
                     except(IndexError):
                         pass
 
                     try:
-                        neighbours[1] = self.valueFunction[row + 1][col]
+                        value = self.valueFunction[row + 1][col]
+                        if value != None:
+                            neighbours.append((value, "down"))
                     except(IndexError):
                         pass
 
                     try:
-                        neighbours[2] = self.valueFunction[row][col - 1]
+                        value = self.valueFunction[row][col - 1]
+                        if value != None:
+                            neighbours.append((value, "left"))
                     except(IndexError):
                         pass
 
                     try:
-                        neighbours[3] = self.valueFunction[row][col + 1]
+                        value = self.valueFunction[row][col + 1]
+                        if value != None:
+                            neighbours.append((value, "right"))
                     except(IndexError):
                         pass
+
+                    max = neighbours[0][0]
 
                     for i in range(len(neighbours)):
-                        if (neighbours[i] != None):
+                        if max < neighbours[i]:
                             max = neighbours[i]
-
-                    for i in range(len(neighbours)):
-                        if (neighbours[i] != None):
-                            if max < neighbours[i]:
-                                max = neighbours[i]
-
-                    # get index of the neighbour with the maximal value
-                    ai = neighbours.index(max)
+                            move = neighbours[i][1]
 
                     # save the greedy action in the policy
-                    self.policy[row][col] = self.actions[ai]
+                    self.policy[row][col] = move
 
         print(self.policy)
 
