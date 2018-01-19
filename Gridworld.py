@@ -87,7 +87,7 @@ class Gridworld:
         self.processingMode = processingMode
         self.gamma = gamma
 
-        #@TODO maybe implement goal > pitfall?
+        # @TODO maybe implement goal > pitfall?
         self.REWARD = float(input("Please specify the reward (or penalty) for each step: "))
         self.GOAL = float(input("Please specify the reward of the goal state: "))
         self.PITFALL = float(input("Please specify the penalty for the pitfall state: "))
@@ -128,12 +128,126 @@ class Gridworld:
         print(self.valueFunction)
 
     def policyEvaluation(self):
-        value_array = []
 
-        for row in self.grid:
-            for elem in row:
-                if (elem == "F"):
-                    value_array.append(0)
+        '''
+        calculates the updated value function:
+         - iterates over grid
+         - for each field (state) calculates the new value
+         - by adding the reward to the discounted sum of possible next states
+        '''
+        i = 0
+        j = 0
+        # iterate over grid
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[0])):
+                # only if state is Free (not obstacle ...)
+                if (self.grid[i][j] == "F"):
+                    # use function to get weighted sum
+                    sum = self.possibleStates(self.grid[i][j], self.policy[i][j], i, j)
+                    print("sum", sum)
+
+                    # update value function with reward and gamma
+                    self.valueFunction[i][j] = self.REWARD + self.gamma * sum
+                    print("value function", self.valueFunction)
+
+    def possibleStates(self, state, policyValue, i, j):
+        '''
+        iterates over possible states that can be reached from state
+        :param state: current state
+        :param policyValue: what action should I take?
+        :param i: index of grid
+        :param j: index of grid
+        :return: sum of all probabilities * expected reward for ending up in a certain state
+        '''
+
+        # calculate the action that can be done with small chance
+        clockwise_action = ""
+        counterclockwise_action = ""
+
+        if (policyValue == "up"):
+            clockwise_action = "right"
+            counterclockwise_action = "left"
+        elif (policyValue == "down"):
+            clockwise_action = "left"
+            counterclockwise_action = "right"
+        elif (policyValue == "left"):
+            clockwise_action = "up"
+            counterclockwise_action = "down"
+        elif (policyValue == "right"):
+            clockwise_action = "down"
+            clockwise_action = "up"
+
+        # get the indices of the next state, if ...
+        # ... action is performed correctly
+        wanted_i, wanted_j = self.nextState(state, policyValue, i, j)
+        print("wanted i", wanted_i,"wanted j", wanted_j)
+        # ... clockwise action is performed
+        clockwise_i, clockwise_j = self.nextState(state, clockwise_action, i, j)
+        # ... counterclockwise action is performed
+        counterclockwise_i, counterclockwise_j = self.nextState(state, counterclockwise_action, i, j)
+
+        # calculate the sum of the values with the probability to reach it
+        sum = self.valueFunction[wanted_i][wanted_j] * 0.8
+        print(sum)
+        sum = sum + self.valueFunction[clockwise_i][clockwise_j] * 0.1
+        sum = sum + self.valueFunction[counterclockwise_i][counterclockwise_j] * 0.1
+        print(sum)
+
+        # return the weighted sum of possible states and thei respective values
+        return sum
+
+    def nextState(self, state, policyValue, i, j):
+        '''
+        @TODO implement 80:10:10 chances?
+        :param state: current state on the grid
+        :param policyValue: current policy value
+        :param i: index i of grid
+        :param j: index j of grid
+        :return: new indices i and j after performing policy
+        '''
+        if (policyValue == "up" and i != 0):
+            i = i - 1
+        elif (policyValue == "down" and i != len(self.grid[i])):
+            i = i + 1
+        elif (policyValue == "left" and j != 0):
+            j = j - 1
+        elif (policyValue == "right" and j != len(self.grid)):
+            j = j + 1
+
+        return i, j
+
+    def makePolicy(self):
+    # go through the whole policy to update it
+    for row in self.policy:
+        for col in row:
+            # array to save the values for all neighbours
+            neighbours = [None, None, None, None]
+
+                # if the index is not out of bounds, save the values of the neighbours
+                try:
+                    neighbours[0] = self.valueFunction[row-1][col]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[1] = self.valueFunction[row+1][col]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[2] = self.valueFunction[row][col-1]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[3] = self.valueFunction[row][col+1]
+                except(IndexError):
+                    pass
+
+                # get index of the neighbour with the maximal value
+                ai = neighbours.index(max(neighbours))
+                # save the greedy action in the policy
+                self.policy[row][col] = self.actions[ai]
 
     def printPolicy(self):
         '''
@@ -148,5 +262,8 @@ if __name__ == '__main__':
     test = Gridworld()
     test.read()
     test.printGrid()
-    test.readUserInput()
+    # test.readUserInput()
     test.randomPolicyInit()
+    print(len(test.grid[1]))
+    test.policyEvaluation()
+    print()
