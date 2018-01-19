@@ -1,9 +1,19 @@
 import fileinput
 import sys
+import random
 from array import array
+import Calculations
 
 
 class Gridworld:
+
+    def __init__(self):
+        self.actions = ["up", "down", "left", "right"]
+        self.arrows = {"up": "\u2B06", "down": "\u2B07", "left": "\u2B05", "right": "\u2B95"}
+        self.gamma = 1
+        self.processingMode = "m"
+        self.grid = ""
+        self.policy = []
 
     def read(self):
         '''
@@ -40,26 +50,81 @@ class Gridworld:
                     line = f.readline()  # read next line
 
         except IOError:  # catch IO error from opening file
-            print("Gridfile could not be found")
+            print("Gridfile could not be found: Please specify a valid file (with path)")
+            exit(1)
 
-        return grid
+        self.grid = grid
 
-
-    def printGrid(self, grid):
+    def printGrid(self):
         '''
         Prints grid correctly formatted in rows and columns
         :param grid: grid to be printed
         '''
 
         # for each row aka sublist
-        for row in grid:
+        for row in self.grid:
             # select every element in that sublist (row) and print it
             for elem in row:
-                print(elem, end="") # end="" to substitute the default end of print which is \n by nothing
-            print("\n", end="") # line break after each row
+                print(elem, end="")  # end="" to substitute the default end of print which is \n by nothing
+            print("\n", end="")  # line break after each row
+
+
+
+    def readUserInput(self):
+        '''
+        Reads in processing mode and gamma value
+        '''
+
+        # read in processing mode from user (a or m)
+        processingMode = input("Please choose between manual and automated processing (a/m): ")
+        while not processingMode == "a" or processingMode == "m":
+            processingMode = input("Please choose between manual and automated processing (a/m): ")
+
+        # read in gamma as float
+        gamma = float(input("Please specify a gamma value between 0 and 1: "))
+        while gamma > 1.0 or gamma < 0.0:
+            gamma = float(input("Please specify a gamma value between 0 and 1: "))
+
+        self.gamma = gamma
+        self.processingMode = processingMode
+
+    def randomPolicyInit(self):
+        '''
+        Initializes random policy by assigning random value from self.actions to every state (F)
+        '''
+        print(self.actions)
+        for row in self.grid:
+            print("row", row)
+            for elem in row:
+                print("elem", elem)
+
+                if (elem == "F"):
+                    self.policy.append(random.choice(self.actions))
+        print(self.policy)
+
+
+    def policyEvaluation(self):
+        value_array = []
+
+        for row in self.grid:
+            for elem in row:
+                if (elem == "F"):
+                    value_array.append(0)
+
+    def printPolicy(self):
+        '''
+        for row in self.grid:
+            for elem in row:
+
+                if(elem == "F"):
+        '''
+
 
 
 if __name__ == '__main__':
     test = Gridworld()
-    example_grid = test.read()
-    test.printGrid(example_grid)
+    test.read()
+    # test.printGrid()
+    # test.readUserInput()
+    test.randomPolicyInit()
+
