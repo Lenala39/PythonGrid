@@ -105,7 +105,6 @@ class Gridworld:
                     self.policy.append(random.choice(self.actions))
         print(self.policy)
 
-
     def valueFunctionInit(self):
         '''
         Initializes value function
@@ -117,11 +116,11 @@ class Gridworld:
             for j in range(len(self.grid[0])):
                 # print("elem", elem)
                 if (self.grid[i][j] == "F"):
-                    self.valueFunction[i][j] = 0;
+                    self.valueFunction[i][j] = 0
                 elif (self.grid[i][j] == "P"):
-                    self.valueFunction[i][j] = self.PITFALL;
+                    self.valueFunction[i][j] = self.PITFALL
                 elif (self.grid[i][j] == "E"):
-                    self.valueFunction[i][j] = self.GOAL;
+                    self.valueFunction[i][j] = self.GOAL
 
         print(self.valueFunction)
 
@@ -133,6 +132,7 @@ class Gridworld:
          - for each field (state) calculates the new value
          - by adding the reward to the discounted sum of possible next states
         '''
+
         i = 0
         j = 0
         # iterate over grid
@@ -173,12 +173,13 @@ class Gridworld:
             counterclockwise_action = "down"
         elif (policyValue == "right"):
             clockwise_action = "down"
-            clockwise_action = "up"
+            counterclockwise_action = "up"
 
         # get the indices of the next state, if ...
         # ... action is performed correctly
         wanted_i, wanted_j = self.nextState(state, policyValue, i, j)
-        print("wanted i", wanted_i,"wanted j", wanted_j)
+        print("wanted i", wanted_i, "wanted j", wanted_j)
+
         # ... clockwise action is performed
         clockwise_i, clockwise_j = self.nextState(state, clockwise_action, i, j)
         # ... counterclockwise action is performed
@@ -215,30 +216,30 @@ class Gridworld:
         return i, j
 
     def makePolicy(self):
-    # go through the whole policy to update it
-    for row in self.policy:
-        for col in row:
-            # array to save the values for all neighbours
-            neighbours = [None, None, None, None]
+        # go through the whole policy to update it
+        for row in self.policy:
+            for col in row:
+                # array to save the values for all neighbours
+                neighbours = [None, None, None, None]
 
                 # if the index is not out of bounds, save the values of the neighbours
                 try:
-                    neighbours[0] = self.valueFunction[row-1][col]
+                    neighbours[0] = self.valueFunction[row - 1][col]
                 except(IndexError):
                     pass
 
                 try:
-                    neighbours[1] = self.valueFunction[row+1][col]
+                    neighbours[1] = self.valueFunction[row + 1][col]
                 except(IndexError):
                     pass
 
                 try:
-                    neighbours[2] = self.valueFunction[row][col-1]
+                    neighbours[2] = self.valueFunction[row][col - 1]
                 except(IndexError):
                     pass
 
                 try:
-                    neighbours[3] = self.valueFunction[row][col+1]
+                    neighbours[3] = self.valueFunction[row][col + 1]
                 except(IndexError):
                     pass
 
@@ -247,21 +248,23 @@ class Gridworld:
                 # save the greedy action in the policy
                 self.policy[row][col] = self.actions[ai]
 
-    def printPolicy(self):
-        '''
-        for row in self.grid:
-            for elem in row:
 
-                if(elem == "F"):
-        '''
+def printPolicy(self):
+    '''
+    for row in self.grid:
+        for elem in row:
+
+            if(elem == "F"):
+    '''
 
 
 if __name__ == '__main__':
     test = Gridworld()
     test.read()
     test.printGrid()
-    # test.readUserInput()
+    test.readUserInput()
     test.randomPolicyInit()
-    print(len(test.grid[1]))
+    test.valueFunctionInit()
     test.policyEvaluation()
-    print()
+    test.makePolicy()
+    
