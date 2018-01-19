@@ -103,8 +103,27 @@ class Gridworld:
                 # print("elem", elem)
                 if (elem == "F"):
                     self.policy.append(random.choice(self.actions))
-
         print(self.policy)
+
+
+    def valueFunctionInit(self):
+        '''
+        Initializes value function
+        Empty fields are given a value of 0, pitfalls are given the punishment-value determined by the user
+        and a goal state is given the reward-value determined by the user
+        '''
+        for i in range(len(self.grid)):
+            # print("row", row)
+            for j in range(len(self.grid[0])):
+                # print("elem", elem)
+                if (self.grid[i][j] == "F"):
+                    self.valueFunction[i][j] = 0;
+                elif (self.grid[i][j] == "P"):
+                    self.valueFunction[i][j] = self.PITFALL;
+                elif (self.grid[i][j] == "E"):
+                    self.valueFunction[i][j] = self.GOAL;
+
+        print(self.valueFunction)
 
     def policyEvaluation(self):
 
@@ -194,6 +213,39 @@ class Gridworld:
             j = j + 1
 
         return i, j
+
+    def makePolicy(self):
+    # go through the whole policy to update it
+    for row in self.policy:
+        for col in row:
+            # array to save the values for all neighbours
+            neighbours = [None, None, None, None]
+
+                # if the index is not out of bounds, save the values of the neighbours
+                try:
+                    neighbours[0] = self.valueFunction[row-1][col]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[1] = self.valueFunction[row+1][col]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[2] = self.valueFunction[row][col-1]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[3] = self.valueFunction[row][col+1]
+                except(IndexError):
+                    pass
+
+                # get index of the neighbour with the maximal value
+                ai = neighbours.index(max(neighbours))
+                # save the greedy action in the policy
+                self.policy[row][col] = self.actions[ai]
 
     def printPolicy(self):
         '''
