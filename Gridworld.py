@@ -97,12 +97,13 @@ class Gridworld:
         Initializes random policy by assigning random value from self.actions to every state (F)
         '''
         # print(self.actions)
-        for row in self.grid:
+        i, j = 0
+        for i in range(len(self.grid)):
             # print("row", row)
-            for elem in row:
+            for j in range(len(self.grid[0])):
                 # print("elem", elem)
-                if (elem == "F"):
-                    self.policy.append(random.choice(self.actions))
+                if (self.grid[i][j] == "F"):
+                    self.policy[i][j] == random.choice(self.actions)
         print(self.policy)
 
 
@@ -112,16 +113,17 @@ class Gridworld:
         Empty fields are given a value of 0, pitfalls are given the punishment-value determined by the user
         and a goal state is given the reward-value determined by the user
         '''
+        i, j = 0
         for i in range(len(self.grid)):
             # print("row", row)
             for j in range(len(self.grid[0])):
                 # print("elem", elem)
                 if (self.grid[i][j] == "F"):
-                    self.valueFunction[i][j] = 0;
+                    self.valueFunction[i][j] = 0
                 elif (self.grid[i][j] == "P"):
-                    self.valueFunction[i][j] = self.PITFALL;
+                    self.valueFunction[i][j] = self.PITFALL
                 elif (self.grid[i][j] == "E"):
-                    self.valueFunction[i][j] = self.GOAL;
+                    self.valueFunction[i][j] = self.GOAL
 
         print(self.valueFunction)
 
