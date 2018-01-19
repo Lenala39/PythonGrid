@@ -114,6 +114,39 @@ class Gridworld:
                 if (elem == "F"):
                     value_array.append(0)
 
+    def makePolicy(self):
+    # go through the whole policy to update it
+    for row in self.policy:
+        for col in row:
+            # array to save the values for all neighbours
+            neighbours = [None, None, None, None]
+
+                # if the index is not out of bounds, save the values of the neighbours
+                try:
+                    neighbours[0] = self.valueFunction[row-1][col]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[1] = self.valueFunction[row+1][col]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[2] = self.valueFunction[row][col-1]
+                except(IndexError):
+                    pass
+
+                try:
+                    neighbours[3] = self.valueFunction[row][col+1]
+                except(IndexError):
+                    pass
+
+                # get index of the neighbour with the maximal value
+                ai = neighbours.index(max(neighbours))
+                # save the greedy action in the policy
+                self.policy[row][col] = self.actions[ai]
+
     def printPolicy(self):
         '''
         for row in self.grid:
