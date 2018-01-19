@@ -14,6 +14,7 @@ class Gridworld:
         self.processingMode = "m"
         self.grid = ""
         self.policy = []
+        self.valueFunction = []
 
     def read(self):
         '''
@@ -68,8 +69,6 @@ class Gridworld:
                 print(elem, end="")  # end="" to substitute the default end of print which is \n by nothing
             print("\n", end="")  # line break after each row
 
-
-
     def readUserInput(self):
         '''
         Reads in processing mode and gamma value
@@ -85,23 +84,27 @@ class Gridworld:
         while gamma > 1.0 or gamma < 0.0:
             gamma = float(input("Please specify a gamma value between 0 and 1: "))
 
-        self.gamma = gamma
         self.processingMode = processingMode
+        self.gamma = gamma
+
+        #@TODO maybe implement goal > pitfall?
+        self.REWARD = float(input("Please specify the reward (or penalty) for each step: "))
+        self.GOAL = float(input("Please specify the reward of the goal state: "))
+        self.PITFALL = float(input("Please specify the penalty for the pitfall state: "))
 
     def randomPolicyInit(self):
         '''
         Initializes random policy by assigning random value from self.actions to every state (F)
         '''
-        print(self.actions)
+        # print(self.actions)
         for row in self.grid:
-            print("row", row)
+            # print("row", row)
             for elem in row:
-                print("elem", elem)
-
+                # print("elem", elem)
                 if (elem == "F"):
                     self.policy.append(random.choice(self.actions))
-        print(self.policy)
 
+        print(self.policy)
 
     def policyEvaluation(self):
         value_array = []
@@ -120,11 +123,9 @@ class Gridworld:
         '''
 
 
-
 if __name__ == '__main__':
     test = Gridworld()
     test.read()
-    # test.printGrid()
-    # test.readUserInput()
+    test.printGrid()
+    test.readUserInput()
     test.randomPolicyInit()
-
