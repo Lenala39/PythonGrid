@@ -103,8 +103,27 @@ class Gridworld:
                 # print("elem", elem)
                 if (elem == "F"):
                     self.policy.append(random.choice(self.actions))
-
         print(self.policy)
+
+
+    def valueFunctionInit(self):
+        '''
+        Initializes value function
+        Empty fields are given a value of 0, pitfalls are given the punishment-value determined by the user
+        and a goal state is given the reward-value determined by the user
+        '''
+        for i in range(len(self.grid)):
+            # print("row", row)
+            for j in range(len(self.grid[0])):
+                # print("elem", elem)
+                if (self.grid[i][j] == "F"):
+                    self.valueFunction[i][j] = 0;
+                elif (self.grid[i][j] == "P"):
+                    self.valueFunction[i][j] = self.PITFALL;
+                elif (self.grid[i][j] == "E"):
+                    self.valueFunction[i][j] = self.GOAL;
+
+        print(self.valueFunction)
 
     def policyEvaluation(self):
         value_array = []
