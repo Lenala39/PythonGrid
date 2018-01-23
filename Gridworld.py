@@ -8,7 +8,6 @@ import Calculations
 
 class Gridworld:
     '''
-    @Todo: manueller/automatischer Modus: Funktion für Ausführen Eval und Iter
     @Todo: jeder eigene Methode(n) optimieren
     @Todo: Policy visualization (Pfeile drucken)
     @Todo: value function visualization
@@ -27,6 +26,7 @@ class Gridworld:
         self.PITFALL = -1
         self.GOAL = 1
         self.iterations = 1
+        self.neighbourind = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
     def read(self):
         '''
@@ -87,6 +87,7 @@ class Gridworld:
         '''
 
         # read in processing mode from user (a or m)
+
         processingMode = input("Please choose between manual and automated processing (a/m): ")
         while (not (processingMode is "a" or processingMode is "m")):
             processingMode = input("Please choose between manual and automated processing (a/m): ")
@@ -234,7 +235,6 @@ class Gridworld:
 
     def nextState(self, state, policyValue, i, j):
         '''
-        @TODO implement 80:10:10 chances?
         :param state: current state on the grid
         :param policyValue: current policy value
         :param i: index i of grid
@@ -258,51 +258,53 @@ class Gridworld:
 
     def makePolicy(self):
         # go through the whole policy to update it
-        i = 0
-        j = 0
         for row in range(len(self.policy)):
             for col in range(len(self.policy[0])):
+                # only get policy for fields which aren't a obstacle
                 if (self.policy[row][col] != None):
+
                     # array to save the values for all neighbours
-                    neighbours = [None, None, None, None]
+                    neighbours = []
 
-                    # if the index is not out of bounds, save the values of the neighbours
-                    try:
-                        neighbours[0] = self.valueFunction[row - 1][col]
-                    except(IndexError):
-                        pass
+                    # loop to look through the 4-neighbourhood
+                    for i in range(4):
+                        # we ignore the border cases and just catch the error instead
+                        try:
+                            # get the index shift for the next neighbour
+                            a, b = self.neighbourind[i]
+                            # update the indices
+                            rowind = row + a
+                            colind = col + b
 
-                    try:
-                        neighbours[1] = self.valueFunction[row + 1][col]
-                    except(IndexError):
-                        pass
+                            if rowind == -1:
+                                raise IndexError
+                            if colind == -1:
+                                raise IndexError
 
-                    try:
-                        neighbours[2] = self.valueFunction[row][col - 1]
-                    except(IndexError):
-                        pass
+                                # get the value of the neighbour
+                            value = self.valueFunction[rowind][colind]
+                            # save the value if it is not an obstacle and the action done
+                            if value != None:
+                                neighbours.append((value, self.actions[i]))
+                        except(IndexError):
+                            pass
 
-                    try:
-                        neighbours[3] = self.valueFunction[row][col + 1]
-                    except(IndexError):
-                        pass
+                    # set a preliminary maximum and move
+                    max = neighbours[0][0]
+                    move = neighbours[0][1]
 
+                    # go through all neigbours
                     for i in range(len(neighbours)):
-                        if (neighbours[i] != None):
-                            max = neighbours[i]
-
-                    for i in range(len(neighbours)):
-                        if (neighbours[i] != None):
-                            if max < neighbours[i]:
-                                max = neighbours[i]
-
-                    # get index of the neighbour with the maximal value
-                    ai = neighbours.index(max)
+                        # check if the value is greater than the current max
+                        if max < neighbours[i][0]:
+                            # update max and move
+                            max = neighbours[i][0]
+                            move = neighbours[i][1]
 
                     # save the greedy action in the policy
-                    self.policy[row][col] = self.actions[ai]
+                    self.policy[row][col] = move
 
-        print("in makePolicy", self.policy)
+        print(self.policy)
 
     def runPolicyIteration(self):
         '''
@@ -318,38 +320,22 @@ class Gridworld:
 
         # automatic mode
         if (self.processingMode == "a"):
-            # run first iteration
-            oldPolicy = deepcopy(self.policy)
-            self.runEvaluation(self.iterations)
-            self.makePolicy()
 
             # termination condition: until policy does not change anymore
-            eq = self.comparePolicies(self.policy, oldPolicy)
-            while self.comparePolicies(self.policy, oldPolicy):
+            eq = False
+            while not eq:
                 oldPolicy = deepcopy(self.policy)  # copy current policy
                 self.runEvaluation(self.iterations)  # run evaluation
+                print("values: ", self.valueFunction)
+
                 self.makePolicy()  # run iteration
                 eq = self.comparePolicies(self.policy, oldPolicy)  # reassign equality "measure"
 
         # manual mode
         elif (self.processingMode == "m"):
-            # get iterations from user for this evaluation
-            try:
-                iterations = int(input("How many iterations should policy evaluation make? "))
-            except ValueError:
-                print("Please put in a number")
-                iterations = int(input("How many iterations should policy evaluation make? "))
-            while iterations <= 0:
-                iterations = int(input("How many iterations should policy evaluation make? "))
-
-            # first iteration
-            # copy old policy for comparison
-            oldPolicy = deepcopy(self.policy)
-            self.runEvaluation(iterations)  # run eval
-            self.makePolicy()  # run iteration
 
             # compare two policies
-            eq = self.comparePolicies(self.policy, oldPolicy)
+            eq = False
             # as long as the new one differs from the old policy
             while not eq:
                 # ask user input for iterations again
@@ -365,6 +351,7 @@ class Gridworld:
 
                 oldPolicy = deepcopy(self.policy)  # copy policy again
                 self.runEvaluation(iterations)  # run evaluation
+                print("values: ", self.valueFunction)
                 self.makePolicy()  # run iteration
                 eq = self.comparePolicies(self.policy, oldPolicy)  # update equality-"measure"
                 # @Todo: print policy and value function
