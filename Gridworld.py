@@ -15,7 +15,7 @@ class Gridworld:
 
     def __init__(self):
         self.actions = ["up", "down", "left", "right"]
-        self.arrows = {"up": "\u2B06", "down": "\u2B07", "left": "\u2B05", "right": "\u2B95"}
+        self.arrows = {"up": "\30", "down": "\31", "left": "\33", "right": "\32"}
         self.neighbourind = [(-1,0),(1,0),(0,-1),(0,1)]
         self.gamma = 1
         self.processingMode = "m"
