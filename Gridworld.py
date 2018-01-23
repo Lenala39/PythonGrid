@@ -1,6 +1,7 @@
 import fileinput
 import sys
 import random
+from copy import deepcopy
 from array import array
 import Calculations
 
@@ -11,6 +12,7 @@ class Gridworld:
     @Todo: jeder eigene Methode(n) optimieren
     @Todo: Policy visualization (Pfeile drucken)
     @Todo: value function visualization
+    @Todo: more try/catch for input errors (Value Errors)?
     '''
 
     def __init__(self):
@@ -24,6 +26,7 @@ class Gridworld:
         self.REWARD = -0.4
         self.PITFALL = -1
         self.GOAL = 1
+        self.iterations = 1
 
     def read(self):
         '''
@@ -85,8 +88,15 @@ class Gridworld:
 
         # read in processing mode from user (a or m)
         processingMode = input("Please choose between manual and automated processing (a/m): ")
-        while not processingMode == "a" or processingMode == "m":
+        while (not (processingMode is "a" or processingMode is "m")):
             processingMode = input("Please choose between manual and automated processing (a/m): ")
+
+        # if automated processing mode is choosen, get number of evaluation steps (n)
+        iterations = 1
+        if (processingMode == "a"):
+            iterations = int(input("Please specify a number of iterations for each evaluation phase: "))
+            while (iterations <= 0):  # has to be bigger than zero
+                iterations = int(input("Please specify a number of iterations for each evaluation phase: "))
 
         # read in gamma as float
         gamma = float(input("Please specify a gamma value between 0 and 1: "))
@@ -94,6 +104,7 @@ class Gridworld:
             gamma = float(input("Please specify a gamma value between 0 and 1: "))
 
         self.processingMode = processingMode
+        self.iterations = iterations
         self.gamma = gamma
 
         # @TODO maybe implement goal > pitfall?
@@ -117,7 +128,7 @@ class Gridworld:
                 # print("elem", elem)
                 if (self.grid[i][j] == "F"):
                     self.policy[i][j] = random.choice(self.actions)
-        print("policy: ", self.policy)
+        # print("policy: ", self.policy)
 
     def valueFunctionInit(self):
         '''
@@ -137,7 +148,7 @@ class Gridworld:
                 if (self.grid[i][j] == "O"):
                     self.valueFunction[i][j] = None
 
-        print("valueFunction", self.valueFunction)
+        # print("valueFunction", self.valueFunction)
 
     def policyEvaluation(self):
 
@@ -172,7 +183,7 @@ class Gridworld:
                     copiedValueFunction[i][j] = self.PITFALL
 
         self.valueFunction = copiedValueFunction
-        print("new value function", self.valueFunction)
+        # print("new value function", self.valueFunction)
 
     def possibleStates(self, state, policyValue, i, j):
         '''
@@ -251,7 +262,7 @@ class Gridworld:
         j = 0
         for row in range(len(self.policy)):
             for col in range(len(self.policy[0])):
-                if(self.policy[row][col] != None):
+                if (self.policy[row][col] != None):
                     # array to save the values for all neighbours
                     neighbours = [None, None, None, None]
 
@@ -291,26 +302,105 @@ class Gridworld:
                     # save the greedy action in the policy
                     self.policy[row][col] = self.actions[ai]
 
-        print(self.policy)
+        print("in makePolicy", self.policy)
 
+    def runPolicyIteration(self):
+        '''
+        runs policy iteration in one of two modes
+        a: automatic mode
+            - runs evaluation phase for self.iterations-times
+            - stops when there is no change in policy anymore
+        m: manual mode
+            - runs evaluation phase for a designated amount of iterations
+            - user input for number of iterations for eval after each iteration
+            - stops when there is no change in policy anymore
+        '''
 
-def printPolicy(self):
-    '''
-    for row in self.grid:
-        for elem in row:
+        # automatic mode
+        if (self.processingMode == "a"):
+            # run first iteration
+            oldPolicy = deepcopy(self.policy)
+            self.runEvaluation(self.iterations)
+            self.makePolicy()
 
-            if(elem == "F"):
-    '''
+            # termination condition: until policy does not change anymore
+            eq = self.comparePolicies(self.policy, oldPolicy)
+            while self.comparePolicies(self.policy, oldPolicy):
+                oldPolicy = deepcopy(self.policy)  # copy current policy
+                self.runEvaluation(self.iterations)  # run evaluation
+                self.makePolicy()  # run iteration
+                eq = self.comparePolicies(self.policy, oldPolicy)  # reassign equality "measure"
+
+        # manual mode
+        elif (self.processingMode == "m"):
+            # get iterations from user for this evaluation
+            try:
+                iterations = int(input("How many iterations should policy evaluation make? "))
+            except ValueError:
+                print("Please put in a number")
+                iterations = int(input("How many iterations should policy evaluation make? "))
+            while iterations <= 0:
+                iterations = int(input("How many iterations should policy evaluation make? "))
+
+            # first iteration
+            # copy old policy for comparison
+            oldPolicy = deepcopy(self.policy)
+            self.runEvaluation(iterations)  # run eval
+            self.makePolicy()  # run iteration
+
+            # compare two policies
+            eq = self.comparePolicies(self.policy, oldPolicy)
+            # as long as the new one differs from the old policy
+            while not eq:
+                # ask user input for iterations again
+                try:
+                    iterations = int(input("How many iterations should policy evaluation make? "))
+                except ValueError:
+                    print("Please put in a number")
+                    iterations = int(input("How many iterations should policy evaluation make? "))
+
+                while iterations <= 0:
+                    print("Please put in a positive number")
+                    iterations = int(input("How many iterations should policy evaluation make? "))
+
+                oldPolicy = deepcopy(self.policy)  # copy policy again
+                self.runEvaluation(iterations)  # run evaluation
+                self.makePolicy()  # run iteration
+                eq = self.comparePolicies(self.policy, oldPolicy)  # update equality-"measure"
+                # @Todo: print policy and value function
+
+    def runEvaluation(self, iterations):
+        '''
+        runs policy evaluation for a designated amount of iterations
+        :param iterations: how often should evaluation be repeated
+        '''
+        i = 0
+        while (i <= iterations):
+            self.policyEvaluation()
+            i = i + 1
+
+    def comparePolicies(self, policyOne, policyTwo):
+        '''
+        compares two policies to check if they are the same
+        :param policyOne:
+        :param policyTwo:
+        :return: boolean equal
+        '''
+        equal = True
+        i = 0
+        j = 0
+        for i in range(len(policyOne)):
+            for j in range(len(policyOne[0])):
+                if policyOne[i][j] != policyTwo[i][j]:
+                    equal = False
+        return equal
 
 
 if __name__ == '__main__':
     test = Gridworld()
     test.read()
     test.printGrid()
-    # test.readUserInput()
+    test.readUserInput()
     test.randomPolicyInit()
     test.valueFunctionInit()
-    for i in range(20):
-        test.policyEvaluation()
-
-    test.makePolicy()
+    test.runPolicyIteration()
