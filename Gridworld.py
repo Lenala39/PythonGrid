@@ -309,7 +309,7 @@ def printPolicy(self):
 
                 print(rowstring)
 
-    print(len(self.policy[0]) * "---")
+    print(len(self.policy[0]) * "--" + "-")
 
 
 
