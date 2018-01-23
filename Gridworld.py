@@ -292,12 +292,32 @@ class Gridworld:
 
 
 def printPolicy(self):
-    '''
-    for row in self.grid:
-        for elem in row:
+    for row in range(len(self.policy)):
 
-            if(elem == "F"):
-    '''
+                print(len(self.policy[0]) * "---")
+
+            for col in range(len(self.policy[0])):
+                rowstring = "|"
+
+                value = self.policy[row][col]
+
+                if(value == None):
+                    rowstring += "O|"
+                elif(value == "up"):
+                    rowstring += arrows[0] + "|"
+                elif(value == "down"):
+                    rowstring += arrows[1] + "|"
+                elif(value == "right"):
+                    rowstring += arrows[2] + "|"
+                elif(value == "left"):
+                    rowstring += arrows[3] + "|"
+                else:
+                    rowstring += "?|"
+
+                print(rowstring)
+
+    print(len(self.policy[0]) * "---")
+
 
 
 if __name__ == '__main__':
