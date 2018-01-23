@@ -16,6 +16,7 @@ class Gridworld:
     def __init__(self):
         self.actions = ["up", "down", "left", "right"]
         self.arrows = {"up": "\u2B06", "down": "\u2B07", "left": "\u2B05", "right": "\u2B95"}
+        self.neighbourind = [(-1,0),(1,0),(0,-1),(0,1)]
         self.gamma = 1
         self.processingMode = "m"
         self.grid = ""
@@ -251,42 +252,36 @@ class Gridworld:
             for col in range(len(self.policy[0])):
                 # only get policy for fields which aren't a obstacle
                 if(self.policy[row][col] != None):
+
                     # array to save the values for all neighbours
                     neighbours = []
 
-                    # if the index is not out of bounds, save the values of the neighbours
-                    try:
-                        value = self.valueFunction[row - 1][col]
-                        if value != None:
-                            neighbours.append((value, "up"))
-                    except(IndexError):
-                        pass
+                    # loop to look through the 4-neighbourhood
+                    for i in range(4):
+                        # we ignore the border cases and just catch the error instead
+                        try:
+                            # get the index shift for the next neighbour
+                            a,b = neighbourind[i]
+                            # update the indices
+                            rowind = row + a
+                            colind = col + b
+                            # get the value of the neighbour
+                            value = self.valueFunction[rowind][colind]
+                            # save the value if it is not an obstacle and the action done
+                            if value != None:
+                                neighbours.append((value, actions[i]))
+                        except(IndexError):
+                            pass
 
-                    try:
-                        value = self.valueFunction[row + 1][col]
-                        if value != None:
-                            neighbours.append((value, "down"))
-                    except(IndexError):
-                        pass
-
-                    try:
-                        value = self.valueFunction[row][col - 1]
-                        if value != None:
-                            neighbours.append((value, "left"))
-                    except(IndexError):
-                        pass
-
-                    try:
-                        value = self.valueFunction[row][col + 1]
-                        if value != None:
-                            neighbours.append((value, "right"))
-                    except(IndexError):
-                        pass
-
+                    # set a preliminary maximum and move
                     max = neighbours[0][0]
+                    move = neighbours[0][1]
 
+                    # go through all neigbours
                     for i in range(len(neighbours)):
+                        # check if the value is greater than the current max
                         if max < neighbours[i]:
+                            # update max and move
                             max = neighbours[i]
                             move = neighbours[i][1]
 
