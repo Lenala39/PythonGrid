@@ -303,16 +303,9 @@ def printPolicy(self):
 
                 if(value == None):
                     rowstring += "O|"
-                elif(value == "up"):
-                    rowstring += arrows[0] + "|"
-                elif(value == "down"):
-                    rowstring += arrows[1] + "|"
-                elif(value == "right"):
-                    rowstring += arrows[2] + "|"
-                elif(value == "left"):
-                    rowstring += arrows[3] + "|"
                 else:
-                    rowstring += "?|"
+                    rowstring += arrows[value] + "|"
+
 
                 print(rowstring)
 
