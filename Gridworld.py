@@ -68,18 +68,6 @@ class Gridworld:
 
         self.grid = grid
 
-    def printGrid(self):
-        '''
-        Prints grid correctly formatted in rows and columns
-        :param grid: grid to be printed
-        '''
-
-        # for each row aka sublist
-        for row in self.grid:
-            # select every element in that sublist (row) and print it
-            for elem in row:
-                print(elem, end="")  # end="" to substitute the default end of print which is \n by nothing
-            print("\n", end="")  # line break after each row
 
     def readUserInput(self):
         '''
@@ -304,7 +292,7 @@ class Gridworld:
                     # save the greedy action in the policy
                     self.policy[row][col] = move
 
-        print(self.policy)
+        self.printPolicy()
 
     def runPolicyIteration(self):
         '''
@@ -326,7 +314,8 @@ class Gridworld:
             while not eq:
                 oldPolicy = deepcopy(self.policy)  # copy current policy
                 self.runEvaluation(self.iterations)  # run evaluation
-                print("values: ", self.valueFunction)
+                print("values: ")
+                self.printValueFunction()
 
                 self.makePolicy()  # run iteration
                 eq = self.comparePolicies(self.policy, oldPolicy)  # reassign equality "measure"
@@ -351,7 +340,8 @@ class Gridworld:
 
                 oldPolicy = deepcopy(self.policy)  # copy policy again
                 self.runEvaluation(iterations)  # run evaluation
-                print("values: ", self.valueFunction)
+                print("values: ")
+                self.printValueFunction()
                 self.makePolicy()  # run iteration
                 eq = self.comparePolicies(self.policy, oldPolicy)  # update equality-"measure"
                 # @Todo: print policy and value function
@@ -381,6 +371,39 @@ class Gridworld:
                 if policyOne[i][j] != policyTwo[i][j]:
                     equal = False
         return equal
+
+    def printPolicy(self):
+        '''
+        Prints policy for each field in the grid correctly formatted in rows and columns
+        '''
+
+        for i in range(len(self.policy)):
+            for j in range(len(self.policy[0])):
+
+                if (self.policy[i][j] == "up"):
+                    print("\u2B06", end=" ")
+                elif (self.policy[i][j] == "down"):
+                    print("\u2B07", end=" ")
+                elif (self.policy[i][j] == "left"):
+                    print("\u2B05", end=" ")
+                elif (self.policy[i][j] == "right"):
+                    print("\u2B95", end=" ")
+                else:
+                    print(self.policy[i][j], end=" ")
+
+            print("\n", end="")
+
+    def printValueFunction(self):
+        '''
+        Prints value for each field in the grid correctly formatted in rows and columns
+        '''
+        for i in range(len(self.valueFunction)):
+            for j in range(len(self.valueFunction[0])):
+                if (self.valueFunction[i][j] == "None"):
+                    print("x", end=" ")
+                else:
+                    print(self.valueFunction[i][j], end=" ")
+            print("\n", end="")
 
 
 if __name__ == '__main__':
