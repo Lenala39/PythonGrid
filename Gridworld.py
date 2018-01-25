@@ -298,7 +298,6 @@ class Gridworld:
             while not eq:
                 oldPolicy = deepcopy(self.policy)  # copy current policy
                 self.runEvaluation(self.iterations)  # run evaluation
-                print("values: ")
                 self.printValueFunction()
 
                 self.makePolicy()  # run iteration
@@ -324,7 +323,6 @@ class Gridworld:
 
                 oldPolicy = deepcopy(self.policy)  # copy policy again
                 self.runEvaluation(iterations)  # run evaluation
-                print("values: ")
                 self.printValueFunction()
                 self.makePolicy()  # run iteration
                 eq = self.comparePolicies(self.policy, oldPolicy)  # update equality-"measure"
@@ -363,31 +361,38 @@ class Gridworld:
 
         for i in range(len(self.policy)):
             for j in range(len(self.policy[0])):
-
+                # prints a symbol representing the direction that the policy for a given field in the grid
+                # is indicating
                 if (self.policy[i][j] == "up"):
-                    print("\u2B06", end="  ")
+                    print("^", end=" ")
                 elif (self.policy[i][j] == "down"):
-                    print("\u2B07", end="  ")
+                    print("v", end=" ")
                 elif (self.policy[i][j] == "left"):
-                    print("\u2B05", end=" ")
+                    print("<", end=" ")
                 elif (self.policy[i][j] == "right"):
-                    print("\u2B95", end=" ")
+                    print(">", end=" ")
                 else:
                     print(self.policy[i][j], end=" ")
-
             print("\n", end="")
+        print("\n", end="")
 
     def printValueFunction(self):
         '''
         Prints value for each field in the grid correctly formatted in rows and columns
         '''
+        # iterate over value function
         for i in range(len(self.valueFunction)):
             for j in range(len(self.valueFunction[0])):
+                # checking if nothing (or a placeholder) was written in this position of the array
                 if (self.valueFunction[i][j] == "None" or self.valueFunction[i][j] is None):
                     print("  x  ", end=" ")
+                # printing the value of current position in the array
+                # use of ceiling function for rounding up to three decimals is used instead of
+                # Python's "round" function since it delivered better results in this program
                 else:
                     print("{0:5}".format(math.ceil(self.valueFunction[i][j]*1000)/1000), end=" ")
             print("\n", end="")
+        print("\n", end="")
 
     def printGrid(self):
         '''
