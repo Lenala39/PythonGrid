@@ -165,7 +165,7 @@ class Gridworld:
                 # only if state is Free (not obstacle ...)
                 if (self.grid[i][j] == "F"):
                     # use function to get weighted sum
-                    sum = self.possibleStates(self.grid[i][j], self.policy[i][j], i, j)
+                    sum = self.possibleStates(self.policy[i][j], i, j)
                     # print("sum in policy iteration", sum)
 
                     # update value function with reward and gamma
@@ -181,7 +181,7 @@ class Gridworld:
         self.valueFunction = copiedValueFunction
         # print("new value function", self.valueFunction)
 
-    def possibleStates(self, state, policyValue, i, j):
+    def possibleStates(self, policyValue, i, j):
         '''
         iterates over possible states that can be reached from state
         :param state: current state
@@ -210,13 +210,13 @@ class Gridworld:
 
         # get the indices of the next state, if ...
         # ... action is performed correctly
-        wanted_i, wanted_j = self.nextState(state, policyValue, i, j)
+        wanted_i, wanted_j = self.nextState(policyValue, i, j)
         # print("wanted i", wanted_i, "wanted j", wanted_j)
 
         # ... clockwise action is performed
-        clockwise_i, clockwise_j = self.nextState(state, clockwise_action, i, j)
+        clockwise_i, clockwise_j = self.nextState(clockwise_action, i, j)
         # ... counterclockwise action is performed
-        counterclockwise_i, counterclockwise_j = self.nextState(state, counterclockwise_action, i, j)
+        counterclockwise_i, counterclockwise_j = self.nextState(counterclockwise_action, i, j)
         sum = 0
         # calculate the sum of the values with the probability to reach it
         # print("self.valueFunction wanted", self.valueFunction[wanted_i][wanted_j])
@@ -228,7 +228,7 @@ class Gridworld:
         # return the weighted sum of possible states and thei respective values
         return sum
 
-    def nextState(self, state, policyValue, i, j):
+    def nextState(self, policyValue, i, j):
         '''
         :param state: current state on the grid
         :param policyValue: current policy value
@@ -256,50 +256,25 @@ class Gridworld:
         for row in range(len(self.policy)):
             for col in range(len(self.policy[0])):
                 # only get policy for fields which aren't a obstacle
-                if (self.policy[row][col] != None):
+                if(self.policy[row][col] != None):
 
-                    # array to save the values for all neighbours
-                    neighbours = []
+                    temp = [None, None, None, None]
 
-                    # loop to look through the 4-neighbourhood
-                    for i in range(4):
-                        # we ignore the border cases and just catch the error instead
-                        try:
-                            # get the index shift for the next neighbour
-                            a, b = self.neighbourind[i]
-                            # update the indices
-                            rowind = row + a
-                            colind = col + b
+                    for i in range(len(temp)):
+                        temp[i] = self.possibleStates(self.actions[i], row, col)
 
-                            if rowind == -1:
-                                raise IndexError
-                            if colind == -1:
-                                raise IndexError
+                    max = temp[0]
+                    ind = 0
 
-                                # get the value of the neighbour
-                            value = self.valueFunction[rowind][colind]
-                            # save the value if it is not an obstacle and the action done
-                            if value != None:
-                                neighbours.append((value, self.actions[i]))
-                        except(IndexError):
-                            pass
+                    for i in range(len(temp)):
+                        if max < temp[i]:
+                            max = temp[i]
+                            ind = i
 
-                    # set a preliminary maximum and move
-                    max = neighbours[0][0]
-                    move = neighbours[0][1]
-
-                    # go through all neigbours
-                    for i in range(len(neighbours)):
-                        # check if the value is greater than the current max
-                        if max < neighbours[i][0]:
-                            # update max and move
-                            max = neighbours[i][0]
-                            move = neighbours[i][1]
-
-                    # save the greedy action in the policy
-                    self.policy[row][col] = move
-
+                    self.policy[row][col] = self.actions[ind]
         self.printPolicy()
+
+
 
     def runPolicyIteration(self):
         '''
