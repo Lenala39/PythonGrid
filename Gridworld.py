@@ -1,6 +1,7 @@
 import fileinput
 import sys
 import random
+import math
 from copy import deepcopy
 from array import array
 import Calculations
@@ -117,6 +118,12 @@ class Gridworld:
                 # print("elem", elem)
                 if (self.grid[i][j] == "F"):
                     self.policy[i][j] = random.choice(self.actions)
+                elif (self.grid[i][j] == "E"):
+                    self.policy[i][j] = "+"
+                elif (self.grid[i][j] == "P"):
+                    self.policy[i][j] = "-"
+                else:
+                    self.policy[i][j] = "X"
         # print("policy: ", self.policy)
 
     def valueFunctionInit(self):
@@ -381,9 +388,9 @@ class Gridworld:
             for j in range(len(self.policy[0])):
 
                 if (self.policy[i][j] == "up"):
-                    print("\u2B06", end=" ")
+                    print("\u2B06", end="  ")
                 elif (self.policy[i][j] == "down"):
-                    print("\u2B07", end=" ")
+                    print("\u2B07", end="  ")
                 elif (self.policy[i][j] == "left"):
                     print("\u2B05", end=" ")
                 elif (self.policy[i][j] == "right"):
@@ -399,11 +406,25 @@ class Gridworld:
         '''
         for i in range(len(self.valueFunction)):
             for j in range(len(self.valueFunction[0])):
-                if (self.valueFunction[i][j] == "None"):
-                    print("x", end=" ")
+                if (self.valueFunction[i][j] == "None" or self.valueFunction[i][j] is None):
+                    print("  x  ", end=" ")
                 else:
-                    print(self.valueFunction[i][j], end=" ")
+                    print("{0:5}".format(math.ceil(self.valueFunction[i][j]*1000)/1000), end=" ")
             print("\n", end="")
+
+    def printGrid(self):
+        '''
+        Prints grid correctly formatted in rows and columns
+        :param grid: grid to be printed
+        '''
+
+        # for each row aka sublist
+        for row in self.grid:
+            # select every element in that sublist (row) and print it
+            for elem in row:
+                print(elem, end="")  # end="" to substitute the default end of print which is \n by nothing
+
+            print("\n", end="")  # line break after each row
 
 
 if __name__ == '__main__':
