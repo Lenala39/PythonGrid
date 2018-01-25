@@ -256,22 +256,24 @@ class Gridworld:
         for row in range(len(self.policy)):
             for col in range(len(self.policy[0])):
                 # only get policy for fields which aren't a obstacle
-                if(self.policy[row][col] != None):
+                if(self.policy[row][col] != '+'):
+                    if(self.policy[row][col] != '-'):
+                        if(self.policy[row][col] != 'X'):
 
-                    temp = [None, None, None, None]
+                            temp = [None, None, None, None]
 
-                    for i in range(len(temp)):
-                        temp[i] = self.possibleStates(self.actions[i], row, col)
+                            for i in range(len(temp)):
+                                temp[i] = self.possibleStates(self.actions[i], row, col)
 
-                    max = temp[0]
-                    ind = 0
+                            max = temp[0]
+                            ind = 0
 
-                    for i in range(len(temp)):
-                        if max < temp[i]:
-                            max = temp[i]
-                            ind = i
+                            for i in range(len(temp)):
+                                if max < temp[i]:
+                                    max = temp[i]
+                                    ind = i
 
-                    self.policy[row][col] = self.actions[ind]
+                            self.policy[row][col] = self.actions[ind]
         self.printPolicy()
 
 
