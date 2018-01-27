@@ -64,7 +64,7 @@ class Gridworld:
                     line = f.readline()  # read next line
 
         except IOError:  # catch IO error from opening file
-            print("Gridfile could not be found: Please specify a valid file (with path)")
+            print("Gridfile could not be found: Please specify a valid file (with path).")
             exit(1)
 
         self.grid = grid
@@ -76,31 +76,72 @@ class Gridworld:
         '''
 
         # read in processing mode from user (a or m)
-
         processingMode = input("Please choose between manual and automated processing (a/m): ")
-        while (not (processingMode is "a" or processingMode is "m")):
-            processingMode = input("Please choose between manual and automated processing (a/m): ")
+        # case insensitivity by accepting capitalized letters as well
+        # using .lower() on input string did not work; resulted in always meeting the while-condition
+        while (not (processingMode is "a" or processingMode is "A" or processingMode is "m" or processingMode is "M")):
+            if ("exit" in processingMode.lower()):
+                sys.exit()
+            processingMode = input("Please enter either \"a\" or \"m\": ")
+
 
         # if automated processing mode is choosen, get number of evaluation steps (n)
         iterations = 1
         if (processingMode == "a"):
-            iterations = int(input("Please specify a number of iterations for each evaluation phase: "))
-            while (iterations <= 0):  # has to be bigger than zero
-                iterations = int(input("Please specify a number of iterations for each evaluation phase: "))
+            iterations = input("Please specify a number of iterations for each evaluation phase: ")
+            if ("exit" in iterations.lower()):
+                sys.exit()
+            try:
+                iterations = int(iterations)
+                while (iterations <= 0):  # has to be bigger than zero
+                    # checking if user wants to exit
+                    if ("exit" in iterations.lower()):
+                        sys.exit()
+                    iterations = input("Please specify a positive integer for number of iterations for each evaluation phase: ")
+            except ValueError:
+                print("Stop this tomfoolery and enter a positive integer! Try again next time.")
+                sys.exit()
 
         # read in gamma as float
-        gamma = float(input("Please specify a gamma value between 0 and 1: "))
-        while gamma > 1.0 or gamma < 0.0:
-            gamma = float(input("Please specify a gamma value between 0 and 1: "))
+        gamma = input("Please specify a gamma value between 0 and 1: ")
+        # check initial input for wish to end program
+        if ("exit" in gamma.lower()):
+            sys.exit()
+        try:
+            # make sure input has acceptable value
+            while (float(gamma) > 1.0 or float(gamma) < 0.0):
+                gamma = input("Please specify a gamma value between 0 and 1: ")
+                if ("exit" in gamma.lower()):
+                    sys.exit()
+            gamma = float(gamma)
+        except ValueError:
+            print("Stop this tomfool ery and enter a float value between 0 and 1! Try again next time.")
+            sys.exit()
 
         self.processingMode = processingMode
         self.iterations = iterations
         self.gamma = gamma
 
         # @TODO maybe implement goal > pitfall?
-        self.REWARD = float(input("Please specify the reward (or penalty) for each step: "))
-        self.GOAL = float(input("Please specify the reward of the goal state: "))
-        self.PITFALL = float(input("Please specify the penalty for the pitfall state: "))
+        # check for correctness of input
+        # since it is absolutely up to the user which values these variables take
+        # we only check for input type
+        try:
+            self.REWARD = input("Please specify the reward (or penalty) for each step: ")
+            if ("exit" in self.REWARD.lower()):
+                sys.exit()
+            self.REWARD = float(self.REWARD)
+            self.GOAL = input("Please specify the reward of the goal state: ")
+            if ("exit" in self.GOAL.lower()):
+                sys.exit()
+            self.GOAL = float(self.GOAL)
+            self.PITFALL = input("Please specify the penalty for the pitfall state: ")
+            if ("exit" in self.PITFALL.lower()):
+                sys.exit()
+            self.PITFALL = float(self.PITFALL)
+        except ValueError:
+            print("Stop this tomfool ery and enter a float value between 0 and 1! Try again next time.")
+            sys.exit()
 
     def randomPolicyInit(self):
         '''
@@ -312,14 +353,18 @@ class Gridworld:
             while not eq:
                 # ask user input for iterations again
                 try:
-                    iterations = int(input("How many iterations should policy evaluation make? "))
-                except ValueError:
-                    print("Please put in a number")
-                    iterations = int(input("How many iterations should policy evaluation make? "))
+                    iterations = input("How many iterations should policy evaluation make? ")
+                    if ("exit" in iterations.lower()):
+                        sys.exit()
+                    iterations = int(iterations)
+                    while (iterations <= 0):
+                        iterations = input("Please enter a positive integer! Number of iterations: ")
+                        if ("exit" in iterations.lower()):
+                            sys.exit()
+                        iterations = int(iterations)
 
-                while iterations <= 0:
-                    print("Please put in a positive number")
-                    iterations = int(input("How many iterations should policy evaluation make? "))
+                except ValueError:
+                    print("Stop this tomfoolery and enter a positive integer! Try again next time.")
 
                 oldPolicy = deepcopy(self.policy)  # copy policy again
                 self.runEvaluation(iterations)  # run evaluation
@@ -411,6 +456,7 @@ class Gridworld:
 
 if __name__ == '__main__':
     test = Gridworld()
+    print("Welcome to Gridworld!\nYou may terminate the program by typing \'exit\' anytime you are asked for input.")
     test.read()
     test.printGrid()
     test.readUserInput()
