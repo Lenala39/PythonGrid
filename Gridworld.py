@@ -10,10 +10,8 @@ import visualize
 
 class Gridworld:
     '''
-    @Todo: jeder eigene Methode(n) optimieren
-    @Todo: Policy visualization (Pfeile drucken)
-    @Todo: value function visualization
-    @Todo: more try/catch for input errors (Value Errors)?
+    Finds policies for the best way from each field of a grid through a
+    Markov Decision Process.
     '''
 
     def __init__(self):
@@ -199,21 +197,23 @@ class Gridworld:
         # automatic mode
         if (self.processingMode == "a"):
 
-            # termination condition: until policy does not change anymore
+            # termination condition: until values do not change anymore
+            # changed from "until policies do not change anymore" since this sometimes
+            # happened before the exactly correct values were found
             eq = False
             while not eq:
-                oldPolicy = deepcopy(self.policy)  # copy current policy
+                oldValues = deepcopy(self.values)  # copy current values
                 self.runEvaluation(self.ITERATIONS)  # run evaluation
                 calculate.makePolicy(self)  # run iteration
-                eq = self.comparePolicies(self.policy, oldPolicy)  # reassign equality "measure"
+                eq = self.compareValues(self.values, oldValues)  # reassign equality "measure"
             visualize.printValues(self)
             visualize.printPolicy(self)
 
         # manual mode
         elif (self.processingMode == "m"):
 
-            # compare two policies
-            # as long as the new one differs from the old policy
+            # compare two values
+            # as long as the new one differs from the old value
             # ask user input for ITERATIONS again
             eq = False
             while not eq:
@@ -232,10 +232,12 @@ class Gridworld:
                 except ValueError:
                     print("Stop this tomfoolery and enter a positive integer! Try again next time.")
 
-                oldPolicy = deepcopy(self.policy)  # copy policy again
+
+                # compare values until they do not change anymore
+                oldValues = deepcopy(self.values)  # copy values again
                 self.runEvaluation(self.ITERATIONS)  # run evaluation
                 calculate.makePolicy(self)  # run iteration
-                eq = self.comparePolicies(self.policy, oldPolicy)  # update equality-"measure"
+                eq = self.compareValues(self.values, oldValues)  # update equality-"measure"
 
                 # print the resulting values and policies
                 visualize.printValues(self)
@@ -251,16 +253,16 @@ class Gridworld:
             calculate.policyEvaluation(self)
 
 
-    def comparePolicies(self, policyOne, policyTwo):
+    def compareValues(self, valueOne, valueTwo):
         '''
-        compares two policies to check if they are the same
-        :param policyOne:
-        :param policyTwo:
+        compares two value arrays to check if they are the same
+        :param valueOne:
+        :param valueTwo:
         :return: boolean equal
         '''
-        for i in range(len(policyOne)):
-            for j in range(len(policyOne[0])):
-                if policyOne[i][j] != policyTwo[i][j]:
+        for i in range(len(valueOne)):
+            for j in range(len(valueOne[0])):
+                if valueOne[i][j] != valueTwo[i][j]:
                     return False
         return True
 
