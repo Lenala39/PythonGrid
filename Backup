@@ -1,7 +1,0 @@
-processingMode = input("Please choose between manual and automated processing (a/m): ")
-if (processingMode.lower is "exit"):
-    sys.exit()
-while (not (processingMode.lower is "a" or processingMode.lower is "m")):
-    processingMode = input("Please choose between manual and automated processing (a/m): ")
-    if (processingMode.lower is "exit"):
-        sys.exit()
